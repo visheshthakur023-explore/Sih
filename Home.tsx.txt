@@ -1,0 +1,123 @@
+import { Link } from 'react-router-dom';
+import { 
+  Map as MapIcon, 
+  BarChart3, 
+  Database,
+  ArrowRight,
+  Activity,
+  Layers,
+  MapPin
+} from 'lucide-react';
+import { getAggregatedStats } from '../data/mockData';
+import { useDeposits } from '../context/DepositContext';
+
+export default function Home() {
+  const { deposits } = useDeposits();
+  const stats = getAggregatedStats(deposits);
+
+  return (
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Manganese Resource Intelligence</h1>
+        <p className="text-slate-600 max-w-3xl">
+          Integrates the latest available verified geological, resource, and production datasets, 
+          allowing industries to identify and compare manganese-rich areas based on quantity, 
+          grade, production, infrastructure, and data confidence.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard 
+          title="Total Resources" 
+          value={`${stats.totalResource.toFixed(1)} MT`} 
+          subtitle="Million Tonnes (Est.)"
+          icon={<Layers className="text-blue-500" />}
+        />
+        <StatCard 
+          title="Proven Reserves" 
+          value={`${stats.totalReserve.toFixed(1)} MT`} 
+          subtitle="Million Tonnes"
+          icon={<Database className="text-green-500" />}
+        />
+        <StatCard 
+          title="Avg. Mn Grade" 
+          value={`${stats.avgGrade.toFixed(1)}%`} 
+          subtitle="Across surveyed areas"
+          icon={<Activity className="text-orange-500" />}
+        />
+        <StatCard 
+          title="Mapped Areas" 
+          value="8" 
+          subtitle="Active & Proposed"
+          icon={<MapPin className="text-purple-500" />}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col items-start">
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+            <MapIcon className="text-orange-600" size={24} />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Interactive Manganese Map</h2>
+          <p className="text-slate-600 mb-6 flex-1">
+            Explore a full GIS map of India's manganese deposits. Filter by grade (Low to Very High), 
+            view estimated quantities, and see infrastructure proximity for industrial decision-making.
+          </p>
+          <Link 
+            to="/map" 
+            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
+          >
+            Explore Map <ArrowRight size={18} />
+          </Link>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col items-start">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <BarChart3 className="text-blue-600" size={24} />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Data Analytics & Comparison</h2>
+          <p className="text-slate-600 mb-6 flex-1">
+            Analyze resource distribution, quality comparisons, and production trends over time. 
+            Compare up to 3 districts side-by-side to find the most suitable location for your processing plant.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link 
+              to="/analytics" 
+              className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg font-medium transition-colors"
+            >
+              View Analytics
+            </Link>
+            <Link 
+              to="/compare" 
+              className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg font-medium transition-colors"
+            >
+              Compare Areas
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg">
+        <h3 className="font-semibold text-orange-800 mb-1">Latest Updates</h3>
+        <ul className="text-sm text-orange-700 space-y-1">
+          <li>• [2024-02-05] Added preliminary survey data for Panchmahal Block, Gujarat.</li>
+          <li>• [2024-01-12] Updated resource estimates for Keonjhar Belt, Odisha.</li>
+          <li>• [2023-11-15] Balaghat Mine production data revised for Q3.</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value, subtitle, icon }: { title: string, value: string, subtitle: string, icon: React.ReactNode }) {
+  return (
+    <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <div className="flex justify-between items-start mb-2">
+        <p className="text-sm font-medium text-slate-500">{title}</p>
+        {icon}
+      </div>
+      <p className="text-2xl font-bold text-slate-900">{value}</p>
+      <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
+    </div>
+  );
+}

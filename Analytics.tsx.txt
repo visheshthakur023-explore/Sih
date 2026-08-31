@@ -1,0 +1,125 @@
+import { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis } from 'recharts';
+import { useDeposits } from '../context/DepositContext';
+
+export default function Analytics() {
+  const { deposits } = useDeposits();
+  const [activeTab, setActiveTab] = useState<'resources' | 'quality'>('resources');
+
+  const resourceData = deposits.map(d => ({
+    name: d.name,
+    Resource: d.resourceTotal,
+    Reserve: d.reserveProven,
+    Production: d.annualProduction * 10 // Multiplied for visibility on same chart scale
+  })).sort((a, b) => b.Resource - a.Resource);
+
+  const qualityData = deposits.map(d => ({
+    name: d.name,
+    grade: d.grade,
+    resource: d.resourceTotal,
+    state: d.state
+  }));
+
+  return (
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto h-full overflow-y-auto">
+      <div className="mb-6 flex justify-between items-end">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Analytics Dashboard</h1>
+          <p className="text-slate-600 mt-1">Resource distribution, quality comparisons, and production trends.</p>
+        </div>
+      </div>
+
+      <div className="flex space-x-1 mb-6 bg-slate-200/50 p-1 rounded-lg inline-flex">
+        <button
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'resources' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'}`}
+          onClick={() => setActiveTab('resources')}
+        >
+          Resource Distribution
+        </button>
+        <button
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'quality' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'}`}
+          onClick={() => setActiveTab('quality')}
+        >
+          Quality vs Quantity
+        </button>
+      </div>
+
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
+        <h2 className="text-lg font-semibold text-slate-800 mb-6">
+          {activeTab === 'resources' ? 'Resource & Reserve by Area (MT)' : 'Grade (%) vs Resource Size (MT)'}
+        </h2>
+        
+        <div className="h-[400px] w-full">
+          {activeTab === 'resources' ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={resourceData} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} tick={{ fontSize: 12, fill: '#64748b' }} axisLine={{ stroke: '#cbd5e1' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <RechartsTooltip 
+                  cursor={{ fill: '#f1f5f9' }}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                <Bar dataKey="Resource" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Reserve" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis type="number" dataKey="resource" name="Resource (MT)" tick={{ fontSize: 12, fill: '#64748b' }} label={{ value: 'Resource Quantity (MT)', position: 'insideBottom', offset: -10 }} />
+                <YAxis type="number" dataKey="grade" name="Grade (%)" tick={{ fontSize: 12, fill: '#64748b' }} label={{ value: 'Manganese Grade (%)', angle: -90, position: 'insideLeft' }} />
+                <ZAxis type="category" dataKey="name" name="Deposit" />
+                <RechartsTooltip 
+                  cursor={{ strokeDasharray: '3 3' }} 
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Scatter name="Deposits" data={qualityData} fill="#f97316" />
+              </ScatterChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Top 3 by Grade</h3>
+          <div className="space-y-3">
+            {[...deposits].sort((a,b) => b.grade - a.grade).slice(0,3).map((d, i) => (
+              <div key={d.id} className="flex justify-between items-center p-3 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">{i+1}</div>
+                  <div>
+                    <p className="font-medium text-slate-900">{d.name}</p>
+                    <p className="text-xs text-slate-500">{d.state}</p>
+                  </div>
+                </div>
+                <div className="font-bold text-orange-600">{d.grade}%</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Top 3 by Resource</h3>
+          <div className="space-y-3">
+            {[...deposits].sort((a,b) => b.resourceTotal - a.resourceTotal).slice(0,3).map((d, i) => (
+              <div key={d.id} className="flex justify-between items-center p-3 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">{i+1}</div>
+                  <div>
+                    <p className="font-medium text-slate-900">{d.name}</p>
+                    <p className="text-xs text-slate-500">{d.state}</p>
+                  </div>
+                </div>
+                <div className="font-bold text-blue-600">{d.resourceTotal} MT</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

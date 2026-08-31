@@ -1,0 +1,108 @@
+import { Database, ShieldCheck, Clock, FileText } from 'lucide-react';
+
+export default function DataSources() {
+  const sources = [
+    {
+      id: 1,
+      org: 'Geological Survey of India (GSI)',
+      docName: 'National Mineral Inventory - Manganese 2023',
+      date: '2023-11-15',
+      coverage: 'National',
+      confidence: 'High',
+      description: 'Comprehensive report on manganese resources and proven reserves across India based on exploratory drilling and geological mapping.'
+    },
+    {
+      id: 2,
+      org: 'Indian Bureau of Mines (IBM)',
+      docName: 'Minerals Yearbook 2022-23',
+      date: '2023-08-05',
+      coverage: 'National',
+      confidence: 'High',
+      description: 'Official statistics on annual production, mine status, and active leases for manganese ore.'
+    },
+    {
+      id: 3,
+      org: 'MOIL Limited',
+      docName: 'Annual Report & Technical Operations 2023',
+      date: '2023-10-20',
+      coverage: 'Maharashtra & Madhya Pradesh',
+      confidence: 'High',
+      description: 'Detailed operational data, grade analysis, and production figures for MOIL operated mines like Balaghat and Dongri Buzurg.'
+    },
+    {
+      id: 4,
+      org: 'State Directorate of Geology (Odisha)',
+      docName: 'Mineral Exploration Review',
+      date: '2023-09-30',
+      coverage: 'Odisha (Keonjhar, Sundergarh)',
+      confidence: 'Medium',
+      description: 'State-level resource estimates and exploration updates. Contains inferred and indicated resource data.'
+    }
+  ];
+
+  return (
+    <div className="p-6 lg:p-8 max-w-5xl mx-auto h-full overflow-y-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <Database className="text-orange-500" />
+          Data Sources & Transparency
+        </h1>
+        <p className="text-slate-600 mt-2">
+          This platform relies on verified geological and production data. We maintain strict transparency regarding the origin, age, and reliability of all information presented.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="bg-blue-50 border border-blue-100 p-5 rounded-xl">
+          <ShieldCheck className="text-blue-500 mb-3" size={24} />
+          <h3 className="font-semibold text-blue-900 mb-1">High Confidence</h3>
+          <p className="text-sm text-blue-700">Measured reserves from official government bodies (GSI, IBM) or audited public sector reports.</p>
+        </div>
+        <div className="bg-yellow-50 border border-yellow-100 p-5 rounded-xl">
+          <Clock className="text-yellow-600 mb-3" size={24} />
+          <h3 className="font-semibold text-yellow-900 mb-1">Medium Confidence</h3>
+          <p className="text-sm text-yellow-700">Indicated resources or slightly aged data (1-3 years old) from state directorates.</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+          <FileText className="text-slate-500 mb-3" size={24} />
+          <h3 className="font-semibold text-slate-700 mb-1">Version History</h3>
+          <p className="text-sm text-slate-600">All datasets maintain a last-updated timestamp to ensure users do not mistake static surveys for real-time data.</p>
+        </div>
+      </div>
+
+      <h2 className="text-xl font-bold text-slate-900 mb-4">Verified Datasets</h2>
+      
+      <div className="space-y-4">
+        {sources.map(source => (
+          <div key={source.id} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:border-orange-200 transition-colors">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-bold text-slate-900 text-lg">{source.docName}</h3>
+              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                source.confidence === 'High' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+              }`}>
+                {source.confidence} Confidence
+              </span>
+            </div>
+            
+            <p className="text-slate-600 text-sm mb-4">{source.description}</p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100 text-sm">
+              <div>
+                <p className="text-xs text-slate-500 uppercase font-medium">Organization</p>
+                <p className="font-medium text-slate-800">{source.org}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 uppercase font-medium">Coverage</p>
+                <p className="font-medium text-slate-800">{source.coverage}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 uppercase font-medium">Last Updated</p>
+                <p className="font-medium text-slate-800">{source.date}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

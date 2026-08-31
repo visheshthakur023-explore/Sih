@@ -1,0 +1,136 @@
+import { useState } from 'react';
+import { Search, MapPin, Database, Activity, Calendar, Info } from 'lucide-react';
+import { getColorForGrade } from '../data/mockData';
+import { useDeposits } from '../context/DepositContext';
+
+export default function DistrictSearch() {
+  const { deposits } = useDeposits();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [minGrade, setMinGrade] = useState('');
+  const [minResource, setMinResource] = useState('');
+
+  const filtered = deposits.filter(d => {
+    const matchesSearch = (d.name + d.district + d.state).toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGrade = minGrade ? d.grade >= Number(minGrade) : true;
+    const matchesResource = minResource ? d.resourceTotal >= Number(minResource) : true;
+    
+    return matchesSearch && matchesGrade && matchesResource;
+  });
+
+  return (
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">Industry Search & Decision Support</h1>
+        <p className="text-slate-600 mt-1">Find suitable areas based on required grade, quantity, and location.</p>
+      </div>
+
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-end">
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-xs font-medium text-slate-500 mb-1">Search Area/District</label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="e.g. Balaghat, Odisha..." 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+            />
+          </div>
+        </div>
+        
+        <div>
+          <label className="block text-xs font-medium text-slate-500 mb-1">Min. Grade (% Mn)</label>
+          <input 
+            type="number" 
+            placeholder="e.g. 30" 
+            value={minGrade}
+            onChange={e => setMinGrade(e.target.value)}
+            className="w-32 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-xs font-medium text-slate-500 mb-1">Min. Quantity (MT)</label>
+          <input 
+            type="number" 
+            placeholder="e.g. 10" 
+            value={minResource}
+            onChange={e => setMinResource(e.target.value)}
+            className="w-32 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+          Results ({filtered.length})
+        </h2>
+        
+        {filtered.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map(deposit => (
+              <div key={deposit.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:border-orange-300 transition-colors">
+                <div className="p-4 border-b border-slate-100 flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-slate-900">{deposit.name}</h3>
+                    <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
+                      <MapPin size={14} /> {deposit.district}, {deposit.state}
+                    </p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded font-medium`}
+                    style={{ backgroundColor: `${getColorForGrade(deposit.gradeCategory)}22`, color: getColorForGrade(deposit.gradeCategory) }}
+                  >
+                    {deposit.gradeCategory}
+                  </span>
+                </div>
+                
+                <div className="p-4 bg-slate-50/50">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1 flex items-center gap-1"><Activity size={12}/> Grade</p>
+                      <p className="font-semibold text-slate-900">{deposit.grade}%</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1 flex items-center gap-1"><Database size={12}/> Resource</p>
+                      <p className="font-semibold text-slate-900">{deposit.resourceTotal} MT</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Distance to Rail</span>
+                      <span className="font-medium text-slate-800">{deposit.distanceToRail} km</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Distance to Port</span>
+                      <span className="font-medium text-slate-800">{deposit.distanceToPort} km</span>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs">
+                    <span className="flex items-center gap-1 text-slate-500">
+                      <Info size={12}/> Conf: 
+                      <span className={deposit.confidence === 'High' ? 'text-green-600' : 'text-yellow-600'}>
+                        {deposit.confidence}
+                      </span>
+                    </span>
+                    <span className="flex items-center gap-1 text-slate-500">
+                      <Calendar size={12}/> {deposit.lastUpdated}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-white rounded-xl border border-slate-200 border-dashed">
+            <Search className="mx-auto text-slate-300 mb-3" size={32} />
+            <h3 className="text-lg font-medium text-slate-900">No areas found</h3>
+            <p className="text-slate-500">Try adjusting your search criteria</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

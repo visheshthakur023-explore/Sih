@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1d4ed8;
+  --color-secondary: #0ea5e9;
+  --color-accent: #f59e0b;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  @apply bg-slate-50 text-slate-900;
+}
+
+/* Custom leaflet popup styling to match Tailwind */
+.leaflet-popup-content-wrapper {
+  @apply rounded-lg shadow-xl overflow-hidden;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: 320px !important;
+}
+
+.leaflet-container {
+  font-family: inherit;
+}

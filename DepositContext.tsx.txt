@@ -1,0 +1,48 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { MOCK_DEPOSITS, ManganeseDeposit, getGradeCategory } from '../data/mockData';
+
+interface DepositContextType {
+  deposits: ManganeseDeposit[];
+  addDeposit: (deposit: Omit<ManganeseDeposit, 'id' | 'gradeCategory' | 'lastUpdated' | 'confidence' | 'reserveProven' | 'annualProduction' | 'status' | 'distanceToRail' | 'distanceToPort'>) => void;
+}
+
+const DepositContext = createContext<DepositContextType | undefined>(undefined);
+
+export function DepositProvider({ children }: { children: ReactNode }) {
+  const [deposits, setDeposits] = useState<ManganeseDeposit[]>(() => {
+    const saved = localStorage.getItem('mn_deposits');
+    return saved ? JSON.parse(saved) : MOCK_DEPOSITS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('mn_deposits', JSON.stringify(deposits));
+  }, [deposits]);
+
+  const addDeposit = (data: Omit<ManganeseDeposit, 'id' | 'gradeCategory' | 'lastUpdated' | 'confidence' | 'reserveProven' | 'annualProduction' | 'status' | 'distanceToRail' | 'distanceToPort'>) => {
+    const newDeposit: ManganeseDeposit = {
+      ...data,
+      id: `d${Date.now()}`,
+      gradeCategory: getGradeCategory(data.grade),
+      lastUpdated: new Date().toISOString().split('T')[0],
+      confidence: 'Low', // Crowdsourced data starts with Low confidence
+      reserveProven: 0, // Needs verification
+      annualProduction: 0,
+      status: 'Proposed',
+      distanceToRail: Math.floor(Math.random() * 100) + 10,
+      distanceToPort: Math.floor(Math.random() * 500) + 50,
+    };
+    setDeposits(prev => [...prev, newDeposit]);
+  };
+
+  return (
+    <DepositContext.Provider value={{ deposits, addDeposit }}>
+      {children}
+    </DepositContext.Provider>
+  );
+}
+
+export const useDeposits = () => {
+  const context = useContext(DepositContext);
+  if (context === undefined) throw new Error('useDeposits must be used within a DepositProvider');
+  return context;
+};

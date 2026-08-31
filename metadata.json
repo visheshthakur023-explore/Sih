@@ -1,0 +1,6 @@
+{
+  "name": "Manganese Intelligence",
+  "description": "An interactive dashboard and GIS map platform for exploring manganese resources, grades, and production across India.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

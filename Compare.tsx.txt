@@ -1,0 +1,168 @@
+import { useState } from 'react';
+import { Scale, X, AlertCircle } from 'lucide-react';
+import { ManganeseDeposit, getColorForGrade } from '../data/mockData';
+import { useDeposits } from '../context/DepositContext';
+
+export default function Compare() {
+  const { deposits } = useDeposits();
+  const [selectedIds, setSelectedIds] = useState<string[]>(['d1', 'd3']);
+  
+  const selectedDeposits = selectedIds.map(id => deposits.find(d => d.id === id)).filter(Boolean) as ManganeseDeposit[];
+  const availableDeposits = deposits.filter(d => !selectedIds.includes(d.id));
+
+  const addDeposit = (id: string) => {
+    if (selectedIds.length < 3) {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const removeDeposit = (id: string) => {
+    setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
+  };
+
+  return (
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto h-full overflow-y-auto">
+      <div className="mb-6 flex justify-between items-end flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Compare Areas</h1>
+          <p className="text-slate-600 mt-1">Select up to 3 deposits/areas to compare side-by-side.</p>
+        </div>
+        
+        {selectedIds.length < 3 && (
+          <div className="flex items-center gap-2">
+            <select 
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+              onChange={(e) => {
+                if (e.target.value) addDeposit(e.target.value);
+                e.target.value = '';
+              }}
+              defaultValue=""
+            >
+              <option value="" disabled>+ Add area to compare</option>
+              {availableDeposits.map(d => (
+                <option key={d.id} value={d.id}>{d.name} ({d.district})</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {selectedDeposits.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-200 border-dashed">
+          <Scale className="mx-auto text-slate-300 mb-3" size={48} />
+          <h3 className="text-xl font-medium text-slate-900 mb-2">No areas selected</h3>
+          <p className="text-slate-500 max-w-md mx-auto">Please add at least one area from the dropdown above to begin comparison.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th className="p-4 border-b border-r border-slate-200 bg-slate-50 w-48 font-semibold text-slate-600">Parameter</th>
+                {selectedDeposits.map(d => (
+                  <th key={d.id} className="p-4 border-b border-r border-slate-200 min-w-[250px] relative">
+                    <button 
+                      onClick={() => removeDeposit(d.id)}
+                      className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"
+                    >
+                      <X size={18} />
+                    </button>
+                    <div className="pr-6">
+                      <h3 className="text-lg font-bold text-slate-900">{d.name}</h3>
+                      <p className="text-sm text-slate-500 font-normal">{d.district}, {d.state}</p>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              <tr>
+                <td className="p-4 border-b border-r border-slate-200 font-medium text-slate-700 bg-slate-50">Manganese Grade</td>
+                {selectedDeposits.map(d => (
+                  <td key={d.id} className="p-4 border-b border-r border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold text-slate-900">{d.grade}%</span>
+                      <span className="px-2 py-0.5 rounded text-xs font-medium" 
+                        style={{ backgroundColor: `${getColorForGrade(d.gradeCategory)}22`, color: getColorForGrade(d.gradeCategory) }}>
+                        {d.gradeCategory}
+                      </span>
+                    </div>
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="p-4 border-b border-r border-slate-200 font-medium text-slate-700 bg-slate-50">Total Resource</td>
+                {selectedDeposits.map(d => (
+                  <td key={d.id} className="p-4 border-b border-r border-slate-200 font-semibold text-slate-800">
+                    {d.resourceTotal} MT
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="p-4 border-b border-r border-slate-200 font-medium text-slate-700 bg-slate-50">Proven Reserve</td>
+                {selectedDeposits.map(d => (
+                  <td key={d.id} className="p-4 border-b border-r border-slate-200 text-slate-800">
+                    {d.reserveProven} MT
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="p-4 border-b border-r border-slate-200 font-medium text-slate-700 bg-slate-50">Annual Production</td>
+                {selectedDeposits.map(d => (
+                  <td key={d.id} className="p-4 border-b border-r border-slate-200 text-slate-800">
+                    {d.annualProduction} MT
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="p-4 border-b border-r border-slate-200 font-medium text-slate-700 bg-slate-50">Mine Status</td>
+                {selectedDeposits.map(d => (
+                  <td key={d.id} className="p-4 border-b border-r border-slate-200">
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                      d.status === 'Active' ? 'bg-green-100 text-green-700' :
+                      d.status === 'Inactive' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {d.status}
+                    </span>
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="p-4 border-b border-r border-slate-200 font-medium text-slate-700 bg-slate-50">Infrastructure</td>
+                {selectedDeposits.map(d => (
+                  <td key={d.id} className="p-4 border-b border-r border-slate-200">
+                    <ul className="space-y-1 text-slate-600">
+                      <li>Rail: <span className="font-medium text-slate-800">{d.distanceToRail} km</span></li>
+                      <li>Port: <span className="font-medium text-slate-800">{d.distanceToPort} km</span></li>
+                    </ul>
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="p-4 border-r border-slate-200 font-medium text-slate-700 bg-slate-50">Data Reliability</td>
+                {selectedDeposits.map(d => (
+                  <td key={d.id} className="p-4 border-r border-slate-200">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle size={16} className={
+                        d.confidence === 'High' ? 'text-green-500 flex-shrink-0' :
+                        d.confidence === 'Medium' ? 'text-yellow-500 flex-shrink-0' : 'text-red-500 flex-shrink-0'
+                      } />
+                      <div>
+                        <p className={`text-xs font-medium mb-1 ${
+                          d.confidence === 'High' ? 'text-green-700' :
+                          d.confidence === 'Medium' ? 'text-yellow-700' : 'text-red-700'
+                        }`}>{d.confidence} Confidence</p>
+                        <p className="text-xs text-slate-500 leading-tight">Source: {d.dataSource}</p>
+                        <p className="text-xs text-slate-400 mt-1">Updated: {d.lastUpdated}</p>
+                      </div>
+                    </div>
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
